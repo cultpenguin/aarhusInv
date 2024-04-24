@@ -15,10 +15,11 @@ import pandas as pd
 
 class Model:
 
-    def __init__(self, inv_dir, exe='AarhusInv64_v10.1.exe'):
+    def __init__(self, inv_dir, exe='AarhusInv64_v10.1.exe', con_file=None):
         self.models = []
         self.inv_dir = inv_dir
-        self.exe = exe
+        self.con_file = con_file
+        self.exe = exe        
 
         if os.path.isfile(os.path.join(self.inv_dir, self.exe)) is False:
 
@@ -109,16 +110,29 @@ class Model:
 
             print(mod_file + ' has been created.')
 
-    def runInv(self, mod_file=None):
+    def runInv(self, mod_file=None, con_file=None):
 
+
+        # Use the default mod_file and con_file if none are provided
         if mod_file is None:
             mod_file = self.mod_file
+        else:
+            self.mod_file = mod_file
+        if con_file is None:
+            con_file = self.con_file
+        else:
+            self.con_file = con_file
 
         cwd = os.getcwd()
         os.chdir(self.inv_dir)
         t = time.time()
-        print('AarhusInv - Started')
-        subprocess.run(self.exe + ' ' + mod_file, stdout=subprocess.PIPE)
+        cmd = self.exe + ' ' + mod_file
+        if con_file is not None:
+            cmd = cmd + ' ' + con_file
+
+        print('AarhusInv - Started, cmd="%s"'%(cmd))
+        #subprocess.run(self.exe + ' ' + mod_file, stdout=subprocess.PIPE)
+        subprocess.run(cmd, stdout=subprocess.PIPE)
         print('AarhusInv - Done')
         elapsed = time.time() - t
         print('Elapsed time is ' + str(np.round(elapsed, 2)) + ' seconds.')
